@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AbsenQu – Sistem Absensi Digital</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --indigo: #6366f1; --indigo-d: #4f46e5; --indigo-xd: #3730a3;
+      --emerald: #10b981; --emerald-d: #059669;
+      --amber: #f59e0b; --amber-d: #d97706;
+      --rose: #f43f5e; --sky: #0ea5e9;
+      --s50:#f8fafc; --s100:#f1f5f9; --s200:#e2e8f0; --s300:#cbd5e1;
+      --s400:#94a3b8; --s500:#64748b; --s600:#475569; --s700:#334155;
+      --s800:#1e293b; --s900:#0f172a; --white:#ffffff;
+      --r8:8px; --r12:12px; --r16:16px; --r20:20px; --r28:28px;
+      --sh1:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+      --sh2:0 4px 16px rgba(0,0,0,.08),0 2px 6px rgba(0,0,0,.05);
+      --sh3:0 12px 40px rgba(0,0,0,.12),0 4px 16px rgba(0,0,0,.06);
+      --glow:0 0 0 4px rgba(99,102,241,.18);
+      --t:.2s ease;
+    }
+    html,body { height:100%; font-family:'Plus Jakarta Sans',sans-serif; background:var(--s100); color:var(--s900); -webkit-font-smoothing:antialiased; }
+
+    /* ── SCREENS ── */
+    .screen { display:none; }
+    .screen.active { display:block; }
+    #screen-login.active {
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      min-height:100vh; padding:28px 16px;
+      background:
+        radial-gradient(ellipse 80% 60% at 65% -5%, rgba(99,102,241,.22) 0%,transparent 70%),
+        radial-gradient(ellipse 55% 40% at -5% 85%, rgba(16,185,129,.14) 0%,transparent 60%),
+        var(--s100);
+    }
+    #screen-dashboard.active { display:block; }
+
+    /* ── LOGIN ── */
+    .login-brand { text-align:center; margin-bottom:28px; }
+    .brand-icon {
+      width:68px; height:68px; margin:0 auto 14px;
+      background:linear-gradient(135deg,var(--indigo),var(--indigo-xd));
+      border-radius:20px; display:flex; align-items:center; justify-content:center;
+      box-shadow:0 10px 28px rgba(99,102,241,.42);
+    }
+    .brand-icon svg { width:34px; height:34px; fill:white; }
+    .login-brand h1 { font-size:2.1rem; font-weight:800; letter-spacing:-.5px; }
+    .login-brand h1 span { color:var(--indigo); }
+    .login-brand p { font-size:.88rem; color:var(--s500); margin-top:4px; }
+    .login-card {
+      background:var(--white); border-radius:var(--r28); box-shadow:var(--sh3);
+      border:1px solid var(--s200); width:100%; max-width:420px; padding:34px 30px;
+    }
+    .login-card h2 { font-size:1.12rem; font-weight:700; margin-bottom:3px; }
+    .login-card .sub { font-size:.82rem; color:var(--s500); margin-bottom:24px; }
+
+    /* ── INPUTS ── */
+    .field { margin-bottom:15px; }
+    .field label { display:block; font-size:.74rem; font-weight:600; color:var(--s500); text-transform:uppercase; letter-spacing:.6px; margin-bottom:6px; }
+    .inp { position:relative; }
+    .inp .ico { position:absolute; left:13px; top:50%; transform:translateY(-50%); width:16px; height:16px; color:var(--s400); pointer-events:none; }
+    .inp input, .inp select {
+      width:100%; padding:11px 12px 11px 40px;
+      border:1.5px solid var(--s200); border-radius:var(--r8);
+      font-family:inherit; font-size:.92rem; color:var(--s900);
+      background:var(--s50); outline:none; transition:all var(--t);
+    }
+    .inp input:focus, .inp select:focus { border-color:var(--indigo); background:var(--white); box-shadow:var(--glow); }
+    .inp input::placeholder { color:var(--s400); }
+    .inp .no-ico { padding-left:13px !important; }
+    .eye-btn { position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:var(--s400); transition:color var(--t); line-height:1; }
+    .eye-btn:hover { color:var(--indigo); }
+    .eye-btn svg { width:16px; height:16px; }
+
+    /* ── BUTTONS ── */
+    .btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; border:none; border-radius:var(--r8); font-family:inherit; font-weight:600; cursor:pointer; transition:all var(--t); font-size:.88rem; }
+    .btn:disabled { opacity:.52; cursor:not-allowed; transform:none !important; }
+    .btn-indigo { background:linear-gradient(135deg,var(--indigo),var(--indigo-xd)); color:white; padding:12px 20px; font-size:.95rem; font-weight:700; box-shadow:0 4px 14px rgba(99,102,241,.38); width:100%; }
+    .btn-indigo:hover:not(:disabled) { opacity:.88; transform:translateY(-1px); }
+    .btn-emerald { background:linear-gradient(135deg,var(--emerald),var(--emerald-d)); color:white; padding:13px 20px; font-size:.95rem; font-weight:700; box-shadow:0 4px 14px rgba(16,185,129,.35); width:100%; }
+    .btn-emerald:hover:not(:disabled) { opacity:.88; transform:translateY(-1px); }
+    .btn-amber { background:linear-gradient(135deg,var(--amber),var(--amber-d)); color:white; padding:13px 20px; font-size:.95rem; font-weight:700; box-shadow:0 4px 14px rgba(245,158,11,.35); width:100%; }
+    .btn-amber:hover:not(:disabled) { opacity:.88; transform:translateY(-1px); }
+    .btn-outline { background:none; border:1.5px solid var(--s200); color:var(--s600); padding:8px 14px; }
+    .btn-outline:hover { border-color:var(--indigo); color:var(--indigo); background:rgba(99,102,241,.05); }
+    .btn-ghost { background:none; border:none; color:var(--s500); padding:8px 12px; }
+    .btn-ghost:hover { background:var(--s100); color:var(--s700); }
+    .btn-danger { background:var(--rose); color:white; padding:6px 12px; font-size:.78rem; }
+    .btn-danger:hover { opacity:.82; }
+    .btn-sm { padding:7px 13px; font-size:.8rem; }
+
+    /* ── ALERT ── */
+    .alert { display:none; align-items:center; gap:8px; border-radius:var(--r8); padding:10px 14px; font-size:.83rem; margin-bottom:14px; }
+    .alert.show { display:flex; }
+    .alert-error { background:#fff1f2; border:1px solid #fecdd3; color:var(--rose); }
+    .alert svg { width:15px; height:15px; flex-shrink:0; }
+
+    /* ── HINT ── */
+    .hint { background:var(--s50); border:1px dashed var(--s300); border-radius:var(--r8); padding:12px 14px; font-size:.79rem; color:var(--s500); margin-top:18px; line-height:1.65; }
+    .hint strong { color:var(--s700); }
+
+    /* ── NAVBAR ── */
+    .navbar {
+      height:58px; background:var(--white); border-bottom:1px solid var(--s200);
+      padding:0 18px; display:flex; align-items:center; justify-content:space-between;
+      position:sticky; top:0; z-index:200; box-shadow:var(--sh1);
+    }
+    .nav-brand { display:flex; align-items:center; gap:9px; }
+    .nav-logo { width:33px; height:33px; background:linear-gradient(135deg,var(--indigo),var(--indigo-xd)); border-radius:9px; display:flex; align-items:center; justify-content:center; }
+    .nav-logo svg { width:16px; height:16px; fill:white; }
+    .nav-title { font-size:.98rem; font-weight:800; }
+    .nav-title span { color:var(--indigo); }
+    .nav-r { display:flex; align-items:center; gap:9px; }
+    .user-chip { display:flex; align-items:center; gap:7px; background:var(--s50); border:1px solid var(--s200); border-radius:999px; padding:4px 12px 4px 4px; }
+    .avatar { width:26px; height:26px; border-radius:50%; background:linear-gradient(135deg,var(--indigo),var(--indigo-xd)); display:flex; align-items:center; justify-content:center; font-size:.68rem; font-weight:700; color:white; flex-shrink:0; }
+    .uname { font-size:.8rem; font-weight:600; color:var(--s700); max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .btn-logout { display:flex; align-items:center; gap:5px; background:none; border:1.5px solid var(--s200); border-radius:var(--r8); padding:6px 11px; font-family:inherit; font-size:.78rem; font-weight:600; color:var(--s500); cursor:pointer; transition:all var(--t); }
+    .btn-logout:hover { border-color:var(--rose); color:var(--rose); background:#fff1f2; }
+    .btn-logout svg { width:13px; height:13px; }
+
+    /* ── TAB BAR ── */
+    .tab-bar {
+      background:var(--white); border-bottom:1px solid var(--s200);
+      display:flex; overflow-x:auto; position:sticky; top:58px; z-index:190;
+    }
+    .tab-bar::-webkit-scrollbar { display:none; }
+    .tab-btn {
+      padding:13px 16px; font-size:.82rem; font-weight:600; color:var(--s500);
+      background:none; border:none; border-bottom:2.5px solid transparent;
+      cursor:pointer; white-space:nowrap; transition:all var(--t);
+      display:flex; align-items:center; gap:6px; font-family:inherit;
+    }
+    .tab-btn svg { width:15px; height:15px; }
+    .tab-btn:hover { color:var(--indigo); }
+    .tab-btn.active { color:var(--indigo); border-bottom-color:var(--indigo); }
+
+    /* ── CONTENT ── */
+    .content { padding:18px 15px 60px; max-width:580px; margin:0 auto; width:100%; }
+
+    /* ── CARD ── */
+    .card { background:var(--white); border:1px solid var(--s200); border-radius:var(--r20); box-shadow:var(--sh2); margin-bottom:15px; overflow:hidden; }
+    .card-head { padding:16px 18px 0; display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+    .card-title { font-size:.88rem; font-weight:700; display:flex; align-items:center; gap:6px; }
+    .card-body { padding:0 18px 18px; }
+
+    /* ── WELCOME ── */
+    .welcome { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px; }
+    .welcome h2 { font-size:1.1rem; font-weight:800; }
+    .welcome h2 span { color:var(--indigo); }
+    .clock-pill { display:flex; align-items:center; gap:8px; background:var(--white); border:1px solid var(--s200); border-radius:999px; padding:7px 14px; box-shadow:var(--sh1); flex-shrink:0; }
+    .clock-pill svg { width:14px; height:14px; color:var(--indigo); }
+    #live-time { font-size:.85rem; font-weight:700; }
+    #live-date  { font-size:.67rem; color:var(--s500); }
+
+    /* ── STATS ── */
+    .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
+    .stat { background:var(--white); border:1px solid var(--s200); border-radius:var(--r12); padding:14px 15px; box-shadow:var(--sh1); }
+    .stat-lbl { font-size:.68rem; font-weight:600; color:var(--s400); text-transform:uppercase; letter-spacing:.5px; margin-bottom:3px; }
+    .stat-val { font-size:1.55rem; font-weight:800; }
+    .stat.tot .stat-val { color:var(--indigo); }
+    .stat.msk .stat-val { color:var(--emerald); }
+    .stat.klr .stat-val { color:var(--amber); }
+
+    /* ── CAMERA ── */
+    .cam-wrap { position:relative; background:var(--s900); border-radius:var(--r12); overflow:hidden; aspect-ratio:4/3; display:flex; align-items:center; justify-content:center; margin-bottom:11px; }
+    #cam-video { width:100%; height:100%; object-fit:cover; display:block; transform:scaleX(-1); }
+    #cam-photo { width:100%; height:100%; object-fit:cover; display:none; }
+    #cam-canvas { display:none; }
+    .cam-msg { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; color:white; text-align:center; padding:18px; }
+    .cam-msg svg { width:38px; height:38px; opacity:.55; }
+    .cam-msg p { font-size:.84rem; opacity:.75; line-height:1.5; }
+    .cam-msg.hidden { display:none; }
+    .cam-btns { display:flex; gap:9px; }
+    .cam-btns .btn { flex:1; }
+    .cam-badge { font-size:.7rem; font-weight:700; border-radius:999px; padding:3px 10px; }
+
+    /* ── LOCATION CARD ── */
+    .loc-card { display:flex; align-items:center; gap:12px; padding:13px 16px; border-radius:var(--r12); border:1.5px solid var(--s200); background:var(--s50); margin-bottom:15px; transition:all var(--t); }
+    .loc-ico { width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .loc-ico svg { width:18px; height:18px; }
+    .loc-info { flex:1; min-width:0; }
+    .loc-ttl { font-size:.83rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .loc-sub { font-size:.72rem; color:var(--s500); margin-top:2px; }
+    .loc-badge { font-size:.7rem; font-weight:700; border-radius:999px; padding:3px 10px; flex-shrink:0; }
+    .ls-within  { border-color:#d1fae5; background:#ecfdf5; } .ls-within .loc-ico  { background:#d1fae5; color:var(--emerald); } .ls-within .loc-badge  { background:#d1fae5; color:#065f46; }
+    .ls-outside { border-color:#fecdd3; background:#fff1f2; } .ls-outside .loc-ico { background:#fecdd3; color:var(--rose);    } .ls-outside .loc-badge { background:#fecdd3; color:#9f1239; }
+    .ls-pending { border-color:#e0e7ff; background:#eef2ff; } .ls-pending .loc-ico { background:#e0e7ff; color:var(--indigo);  } .ls-pending .loc-badge { background:#e0e7ff; color:var(--indigo-xd); }
+    .ls-off     { border-color:var(--s200); background:var(--s50); } .ls-off .loc-ico { background:var(--s100); color:var(--s400); } .ls-off .loc-badge { background:var(--s100); color:var(--s500); }
+
+    /* ── TIPE TOGGLE ── */
+    .tipe-toggle { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px; }
+    .tipe-toggle input[type="radio"] { display:none; }
+    .tipe-btn {
+      cursor:pointer; display:flex; flex-direction:column; align-items:center;
+      justify-content:center; gap:5px; padding:13px 10px;
+      border:2px solid var(--s200); border-radius:var(--r12);
+      font-family:inherit; font-size:.82rem; font-weight:600; color:var(--s500);
+      background:var(--s50); transition:all var(--t); user-select:none;
+    }
+    .tipe-btn svg { width:22px; height:22px; }
+    #r-masuk:checked  ~ .tipe-toggle .t-masuk  { border-color:var(--emerald); background:#ecfdf5; color:var(--emerald); box-shadow:0 0 0 3px rgba(16,185,129,.12); }
+    #r-keluar:checked ~ .tipe-toggle .t-keluar { border-color:var(--amber);   background:#fffbeb; color:var(--amber);   box-shadow:0 0 0 3px rgba(245,158,11,.12);  }
+
+    /* ── HISTORY ── */
+    .hist-item { display:flex; align-items:center; gap:11px; padding:10px 0; border-bottom:1px solid var(--s100); animation:fadeUp .25s ease; }
+    .hist-item:last-child { border-bottom:none; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:none} }
+    .hist-thumb { width:40px; height:40px; border-radius:9px; overflow:hidden; flex-shrink:0; background:var(--s100); display:flex; align-items:center; justify-content:center; }
+    .hist-thumb img { width:100%; height:100%; object-fit:cover; }
+    .hist-thumb svg { width:18px; height:18px; color:var(--s400); }
+    .hist-info { flex:1; min-width:0; }
+    .hist-name { font-size:.84rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .hist-meta { font-size:.71rem; color:var(--s400); margin-top:2px; }
+    .hist-r { display:flex; flex-direction:column; align-items:flex-end; gap:4px; }
+    .badge { font-size:.68rem; font-weight:700; border-radius:999px; padding:3px 9px; }
+    .b-msk  { background:#d1fae5; color:#065f46; }
+    .b-klr  { background:#fef3c7; color:#92400e; }
+    .b-loc  { background:var(--s100); color:var(--s500); font-size:.64rem; }
+    .empty-state { padding:28px; text-align:center; color:var(--s400); font-size:.83rem; }
+    .empty-state svg { width:34px; height:34px; display:block; margin:0 auto 10px; opacity:.3; }
+
+    /* ── ADMIN TABLE ── */
+    .utbl { width:100%; border-collapse:collapse; font-size:.82rem; }
+    .utbl th { text-align:left; font-size:.7rem; font-weight:600; color:var(--s500); text-transform:uppercase; letter-spacing:.5px; padding:9px 11px; border-bottom:1px solid var(--s200); background:var(--s50); }
+    .utbl td { padding:10px 11px; border-bottom:1px solid var(--s100); vertical-align:middle; }
+    .utbl tr:last-child td { border-bottom:none; }
+    .role-adm { font-size:.7rem; font-weight:700; padding:2px 8px; border-radius:999px; background:#ede9fe; color:#5b21b6; }
+    .role-kar { font-size:.7rem; font-weight:700; padding:2px 8px; border-radius:999px; background:var(--s100); color:var(--s600); }
+
+    /* ── ADD USER INLINE FORM ── */
+    .add-form { background:var(--s50); border:1px solid var(--s200); border-radius:var(--r12); padding:16px; margin-top:13px; display:none; }
+    .add-form.show { display:block; }
+    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:11px; }
+    .form-acts { display:flex; gap:9px; margin-top:11px; }
+
+    /* ── SETTINGS ── */
+    .set-row { display:flex; align-items:center; justify-content:space-between; padding:13px 0; border-bottom:1px solid var(--s100); }
+    .set-row:last-child { border-bottom:none; }
+    .set-lbl { font-size:.86rem; font-weight:600; }
+    .set-sub { font-size:.73rem; color:var(--s500); margin-top:2px; }
+    .toggle { position:relative; width:42px; height:23px; flex-shrink:0; }
+    .toggle input { opacity:0; width:0; height:0; position:absolute; }
+    .tslider { position:absolute; inset:0; background:var(--s300); border-radius:999px; cursor:pointer; transition:background var(--t); }
+    .tslider::after { content:''; position:absolute; width:17px; height:17px; border-radius:50%; background:white; top:3px; left:3px; transition:transform var(--t); box-shadow:0 1px 3px rgba(0,0,0,.2); }
+    .toggle input:checked + .tslider { background:var(--indigo); }
+    .toggle input:checked + .tslider::after { transform:translateX(19px); }
+
+    /* ── TOAST ── */
+    #toast { position:fixed; bottom:18px; right:15px; min-width:230px; max-width:320px; padding:12px 15px; border-radius:var(--r12); font-size:.84rem; font-weight:500; box-shadow:0 8px 30px rgba(0,0,0,.2); display:flex; align-items:flex-start; gap:8px; transform:translateY(120%); opacity:0; transition:transform .32s cubic-bezier(.34,1.56,.64,1),opacity .25s ease; z-index:999; }
+    #toast.show { transform:translateY(0); opacity:1; }
+    #toast.success { background:#064e3b; border-left:4px solid var(--emerald); color:white; }
+    #toast.error   { background:#4c0519; border-left:4px solid var(--rose);    color:white; }
+    #toast.warn    { background:#451a03; border-left:4px solid var(--amber);   color:white; }
+    #toast svg { width:17px; height:17px; flex-shrink:0; margin-top:1px; }
+    #t-msg { flex:1; line-height:1.45; }
+
+    /* ── SPINNER ── */
+    .spin { width:17px; height:17px; border:2.5px solid rgba(255,255,255,.3); border-top-color:white; border-radius:50%; animation:spin .65s linear infinite; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+
+    /* ── SECT LABEL ── */
+    .slbl { font-size:.7rem; font-weight:700; color:var(--s400); text-transform:uppercase; letter-spacing:.7px; margin-bottom:9px; }
+
+    @media(max-width:400px){
+      .grid2 { grid-template-columns:1fr; }
+      .stats { grid-template-columns:repeat(3,1fr); gap:7px; }
+      .tab-btn { padding:11px 13px; font-size:.76rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     ①  LOGIN SCREEN
+══════════════════════════════════════ -->
+<div id="screen-login" class="screen active">
+  <div class="login-brand">
+    <div class="brand-icon">
+      <svg viewBox="0 0 24 24"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>
+    </div>
+    <h1>Absen<span>Qu</span></h1>
+    <p>Sistem Absensi Digital Karyawan</p>
+  </div>
+
+  <div class="login-card">
+    <h2>Masuk ke Sistem</h2>
+    <p class="sub">Gunakan akun yang diberikan admin</p>
+
+    <div id="login-err" class="alert alert-error">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span id="login-err-msg"></span>
+    </div>
+
+    <form id="login-form" novalidate>
+      <div class="field">
+        <label>Username</label>
+        <div class="inp">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <input type="text" id="l-user" placeholder="Masukkan username…" autocomplete="username" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <div class="inp">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <input type="password" id="l-pass" placeholder="Masukkan password…" autocomplete="current-password" />
+          <button type="button" class="eye-btn" id="eye-btn">
+            <svg id="eye-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-indigo" id="login-btn" style="margin-top:6px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        Masuk
+      </button>
+    </form>
+
+    <div class="hint">
+      💡 <strong>Akun default:</strong><br/>
+      Admin &nbsp;: <strong>admin</strong> / <strong>admin123</strong><br/>
+      Karyawan: <strong>karyawan</strong> / <strong>absen123</strong><br/>
+      <span style="font-size:.73rem;color:var(--s400)">Admin dapat tambah/hapus pengguna di tab Pengaturan.</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     ②  DASHBOARD SCREEN
+══════════════════════════════════════ -->
+<div id="screen-dashboard" class="screen">
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <div class="nav-logo"><svg viewBox="0 0 24 24"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg></div>
+      <span class="nav-title">Absen<span>Qu</span></span>
+    </div>
+    <div class="nav-r">
+      <div class="user-chip"><div class="avatar" id="nav-av"></div><span class="uname" id="nav-nm"></span></div>
+      <button class="btn-logout" id="btn-logout">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Keluar
+      </button>
+    </div>
+  </nav>
+
+  <!-- Tab bar -->
+  <div class="tab-bar" id="tab-bar">
+    <button class="tab-btn active" data-tab="absensi">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+      Absensi
+    </button>
+    <button class="tab-btn" data-tab="riwayat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Riwayat
+    </button>
+    <button class="tab-btn admin-only" data-tab="pengaturan" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M19.07 19.07l-1.41-1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
+      Pengaturan
+    </button>
+  </div>
+
+  <!-- ────────────── TAB: ABSENSI ────────────── -->
+  <div id="tab-absensi" class="content">
+
+    <div class="welcome">
+      <div>
+        <h2>Halo, <span id="greet-name">–</span> 👋</h2>
+        <p style="font-size:.78rem;color:var(--s500);margin-top:3px">Silakan lakukan absensi hari ini</p>
+      </div>
+      <div class="clock-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <div><div id="live-time">--:--:--</div><div id="live-date">…</div></div>
+      </div>
+    </div>
+
+    <!-- Camera card -->
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+          Foto Selfie
+        </span>
+        <span id="cam-badge" class="cam-badge" style="background:var(--s100);color:var(--s500)">Siap</span>
+      </div>
+      <div class="card-body">
+        <div class="cam-wrap">
+          <video id="cam-video" autoplay playsinline muted></video>
+          <img id="cam-photo" alt="Foto Absen" />
+          <canvas id="cam-canvas"></canvas>
+          <div class="cam-msg" id="cam-msg">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+            <p id="cam-msg-txt">Memuat kamera…</p>
+          </div>
+        </div>
+        <div class="cam-btns">
+          <button class="btn btn-outline btn-sm" id="btn-open-cam" style="display:none">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+            Buka Kamera
+          </button>
+          <button class="btn btn-indigo btn-sm" id="btn-capture" style="flex:1;display:none">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+            Ambil Foto
+          </button>
+          <button class="btn btn-outline btn-sm" id="btn-retake" style="display:none">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-5.34L1 10"/></svg>
+            Ulangi
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Location card -->
+    <div class="loc-card ls-pending" id="loc-card">
+      <div class="loc-ico" id="loc-ico">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.33 8 12 8 12s8-6.67 8-12a8 8 0 0 0-8-8z"/></svg>
+      </div>
+      <div class="loc-info">
+        <div class="loc-ttl" id="loc-ttl">Memeriksa lokasi…</div>
+        <div class="loc-sub" id="loc-sub">Menunggu GPS…</div>
+      </div>
+      <span class="loc-badge" id="loc-badge">–</span>
+    </div>
+
+    <!-- Absen form -->
+    <div class="card">
+      <div class="card-head"><span class="card-title">📝 Form Absensi</span></div>
+      <div class="card-body">
+        <form id="absen-form" novalidate>
+          <input type="radio" name="tipe" id="r-masuk"  value="Absen Masuk"  checked />
+          <input type="radio" name="tipe" id="r-keluar" value="Absen Keluar" />
+
+          <p class="slbl">Tipe Absen</p>
+          <div class="tipe-toggle">
+            <label for="r-masuk" class="tipe-btn t-masuk">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 8 16 12 12 16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+              Absen Masuk
+            </label>
+            <label for="r-keluar" class="tipe-btn t-keluar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 8 8 12 12 16"/><line x1="16" y1="12" x2="8" y2="12"/></svg>
+              Absen Keluar
+            </label>
+          </div>
+
+          <div class="field">
+            <label>Nama Karyawan</label>
+            <div class="inp">
+              <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <input type="text" id="f-nama" placeholder="Nama lengkap karyawan…" autocomplete="off" />
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-emerald" id="btn-submit" style="margin-top:4px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px"><polyline points="22 2 11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            Kirim Absen Masuk
+          </button>
+        </form>
+      </div>
+    </div>
+  </div><!-- /tab-absensi -->
+
+  <!-- ────────────── TAB: RIWAYAT ────────────── -->
+  <div id="tab-riwayat" class="content" style="display:none">
+    <div class="stats">
+      <div class="stat tot"><div class="stat-lbl">Total</div><div class="stat-val" id="st-total">0</div></div>
+      <div class="stat msk"><div class="stat-lbl">Masuk</div><div class="stat-val" id="st-masuk">0</div></div>
+      <div class="stat klr"><div class="stat-lbl">Keluar</div><div class="stat-val" id="st-keluar">0</div></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">📋 Riwayat Hari Ini</span>
+        <span id="hist-ct" class="badge" style="background:var(--s100);color:var(--s500)">0</span>
+      </div>
+      <div class="card-body">
+        <div id="hist-list">
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+            Belum ada catatan absensi hari ini.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /tab-riwayat -->
+
+  <!-- ────────────── TAB: PENGATURAN (admin) ────────────── -->
+  <div id="tab-pengaturan" class="content" style="display:none">
+
+    <!-- Manajemen Pengguna -->
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">👥 Manajemen Pengguna</span>
+        <button class="btn btn-outline btn-sm" id="btn-show-add">+ Tambah</button>
+      </div>
+      <div class="card-body">
+        <div class="add-form" id="add-form">
+          <p class="slbl" style="margin-top:0">Data Pengguna Baru</p>
+          <div class="grid2">
+            <div class="field" style="margin-bottom:10px"><label>Nama Lengkap</label><div class="inp"><input type="text" id="nu-nama" placeholder="Nama…" class="no-ico"/></div></div>
+            <div class="field" style="margin-bottom:10px"><label>Username</label><div class="inp"><input type="text" id="nu-user" placeholder="username…" class="no-ico"/></div></div>
+            <div class="field" style="margin-bottom:10px"><label>Password</label><div class="inp"><input type="password" id="nu-pass" placeholder="Password…" class="no-ico"/></div></div>
+            <div class="field" style="margin-bottom:10px"><label>Role</label><div class="inp"><select id="nu-role" class="no-ico"><option value="karyawan">Karyawan</option><option value="admin">Admin</option></select></div></div>
+          </div>
+          <div class="form-acts">
+            <button class="btn btn-indigo btn-sm" id="btn-save-user" style="flex:1">Simpan</button>
+            <button class="btn btn-outline btn-sm" id="btn-cancel-add">Batal</button>
+          </div>
+        </div>
+        <div id="utbl-wrap" style="overflow-x:auto"></div>
+      </div>
+    </div>
+
+    <!-- Pengaturan Lokasi -->
+    <div class="card">
+      <div class="card-head"><span class="card-title">📍 Lokasi Kantor</span></div>
+      <div class="card-body">
+        <div class="grid2" style="margin-bottom:11px">
+          <div class="field" style="margin-bottom:0"><label>Nama Lokasi</label><div class="inp"><input type="text" id="s-locname" placeholder="Kantor Pusat…" class="no-ico"/></div></div>
+          <div class="field" style="margin-bottom:0"><label>Radius (meter)</label><div class="inp"><input type="number" id="s-radius" placeholder="100" min="10" max="9999" class="no-ico"/></div></div>
+          <div class="field" style="margin-bottom:0"><label>Latitude</label><div class="inp"><input type="number" id="s-lat" placeholder="-6.200000" step="any" class="no-ico"/></div></div>
+          <div class="field" style="margin-bottom:0"><label>Longitude</label><div class="inp"><input type="number" id="s-lng" placeholder="106.816666" step="any" class="no-ico"/></div></div>
+        </div>
+        <div style="display:flex;gap:9px;margin-bottom:14px">
+          <button class="btn btn-outline btn-sm" id="btn-use-loc" style="flex:1">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.33 8 12 8 12s8-6.67 8-12a8 8 0 0 0-8-8z"/></svg>
+            Gunakan Lokasi Saya
+          </button>
+          <button class="btn btn-indigo btn-sm" id="btn-save-loc" style="flex:1">Simpan Lokasi</button>
+        </div>
+        <div class="set-row">
+          <div><div class="set-lbl">Wajib Dalam Radius</div><div class="set-sub">Absen ditolak jika di luar radius</div></div>
+          <label class="toggle"><input type="checkbox" id="s-req-loc"><span class="tslider"></span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pengaturan Foto -->
+    <div class="card">
+      <div class="card-head"><span class="card-title">📷 Pengaturan Foto</span></div>
+      <div class="card-body">
+        <div class="set-row">
+          <div><div class="set-lbl">Wajib Ambil Foto Selfie</div><div class="set-sub">Karyawan harus foto sebelum absen</div></div>
+          <label class="toggle"><input type="checkbox" id="s-req-photo"><span class="tslider"></span></label>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tab-pengaturan -->
+</div><!-- /dashboard -->
+
+<!-- Toast -->
+<div id="toast">
+  <svg id="t-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></svg>
+  <span id="t-msg"></span>
+</div>
+
+<!-- ══════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════ -->
+<script>
+'use strict';
+
+// ─────────────────────────────────────────────
+//  ⚙️  KONFIGURASI – URL Google Apps Script
+// ─────────────────────────────────────────────
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby3x1Szzd1TJJO-Ie_v9VAGIHU4SJCD8oZ3QMU2I_0BTpn0c9R4iTmjiXsDLR6YOk8/exec';
+
+// ─────────────────────────────────────────────
+//  STORAGE
+// ─────────────────────────────────────────────
+const DEFAULT_USERS = [
+  { id:1, username:'admin',    password:'admin123', nama:'Administrator',  role:'admin'    },
+  { id:2, username:'karyawan', password:'absen123', nama:'Karyawan Demo',  role:'karyawan' },
+];
+const DEFAULT_SETTINGS = {
+  officeName:'Kantor Pusat', officeLat:null, officeLng:null,
+  officeRadius:100, requireLocation:false, requirePhoto:false,
+};
+const getUsers    = () => JSON.parse(localStorage.getItem('aq_users')   ||'null') || DEFAULT_USERS;
+const saveUsers   = u  => localStorage.setItem('aq_users',   JSON.stringify(u));
+const getCfg      = () => ({ ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem('aq_cfg')||'{}') });
+const saveCfg     = c  => localStorage.setItem('aq_cfg', JSON.stringify(c));
+
+// ─────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────
+let me           = null;   // logged-in user
+let records      = [];
+let camStream    = null;
+let photoTaken   = false;
+let photoDataUrl = null;
+let locState     = { status:'pending', distance:null };
+
+// ─────────────────────────────────────────────
+//  UTILS
+// ─────────────────────────────────────────────
+const LC='id-ID', TZ='Asia/Jakarta';
+const fTime = d => d.toLocaleTimeString(LC,{hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:TZ});
+const fDate = d => d.toLocaleDateString(LC,{weekday:'long',year:'numeric',month:'long',day:'numeric',timeZone:TZ});
+const fFull = d => d.toLocaleString(LC,{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:TZ});
+const fTgl  = d => d.toLocaleDateString(LC,{day:'2-digit',month:'2-digit',year:'numeric',timeZone:TZ});
+const esc   = s => s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function haversine(la1,lo1,la2,lo2){
+  const R=6371000,r=Math.PI/180,dLa=(la2-la1)*r,dLo=(lo2-lo1)*r;
+  const a=Math.sin(dLa/2)**2+Math.cos(la1*r)*Math.cos(la2*r)*Math.sin(dLo/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+// ─────────────────────────────────────────────
+//  CLOCK
+// ─────────────────────────────────────────────
+(function tick(){
+  const d=new Date();
+  const te=document.getElementById('live-time');
+  const de=document.getElementById('live-date');
+  if(te) te.textContent=fTime(d);
+  if(de) de.textContent=fDate(d);
+  setTimeout(tick,1000);
+})();
+
+// ─────────────────────────────────────────────
+//  TOAST
+// ─────────────────────────────────────────────
+let _tt;
+const TICONS = {
+  success:'<polyline points="20 6 9 17 4 12"/>',
+  error:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+  warn:'<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+};
+function toast(msg, type='success'){
+  clearTimeout(_tt);
+  document.getElementById('t-ico').innerHTML = TICONS[type]||TICONS.success;
+  document.getElementById('t-msg').textContent = msg;
+  const el = document.getElementById('toast');
+  el.className = `show ${type}`;
+  _tt = setTimeout(()=>el.className='', 4000);
+}
+
+// ─────────────────────────────────────────────
+//  SCREEN SWITCH
+// ─────────────────────────────────────────────
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ─────────────────────────────────────────────
+//  TABS
+// ─────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(b=>{
+  b.addEventListener('click',()=>switchTab(b.dataset.tab));
+});
+function switchTab(name){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
+  ['absensi','riwayat','pengaturan'].forEach(t=>{
+    const el=document.getElementById(`tab-${t}`);
+    if(el) el.style.display = t===name?'':'none';
+  });
+  if(name==='absensi'){ startCam(); checkLocation(); }
+  else stopCam();
+  if(name==='pengaturan') renderAdmin();
+}
+
+// ─────────────────────────────────────────────
+//  EYE TOGGLE
+// ─────────────────────────────────────────────
+document.getElementById('eye-btn').addEventListener('click',()=>{
+  const inp=document.getElementById('l-pass');
+  inp.type = inp.type==='password'?'text':'password';
+  document.getElementById('eye-svg').innerHTML = inp.type==='text'
+    ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'
+    : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+});
+
+// ─────────────────────────────────────────────
+//  LOGIN
+// ─────────────────────────────────────────────
+document.getElementById('login-form').addEventListener('submit', e=>{
+  e.preventDefault();
+  const username = document.getElementById('l-user').value.trim().toLowerCase();
+  const password = document.getElementById('l-pass').value;
+  const errEl    = document.getElementById('login-err');
+  errEl.classList.remove('show');
+
+  if(!username||!password){
+    document.getElementById('login-err-msg').textContent='Username dan password tidak boleh kosong.';
+    errEl.classList.add('show'); return;
+  }
+  const user = getUsers().find(u=>u.username===username && u.password===password);
+  if(!user){
+    document.getElementById('login-err-msg').textContent='Username atau password salah.';
+    errEl.classList.add('show');
+    document.getElementById('l-pass').value=''; return;
+  }
+
+  me = user;
+  const btn = document.getElementById('login-btn');
+  btn.disabled=true;
+  btn.innerHTML='<div class="spin"></div> Masuk…';
+
+  setTimeout(()=>{
+    btn.disabled=false;
+    btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg> Masuk`;
+
+    const init = user.nama.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    document.getElementById('nav-av').textContent = init;
+    document.getElementById('nav-nm').textContent = user.nama;
+    document.getElementById('greet-name').textContent = user.nama.split(' ')[0];
+    document.getElementById('f-nama').value = user.nama;
+
+    // Show admin tab only for admin role
+    document.querySelectorAll('.admin-only').forEach(t=>t.style.display=user.role==='admin'?'':'none');
+
+    records=[]; photoTaken=false; photoDataUrl=null;
+    renderHistory();
+    showScreen('screen-dashboard');
+    switchTab('absensi');
+    document.getElementById('login-form').reset();
+    toast(`Selamat datang, ${user.nama}! 🎉`);
+  }, 600);
+});
+
+// ─────────────────────────────────────────────
+//  LOGOUT
+// ─────────────────────────────────────────────
+document.getElementById('btn-logout').addEventListener('click',()=>{
+  stopCam();
+  me=null; records=[];
+  showScreen('screen-login');
+  toast('Berhasil keluar dari sistem.','warn');
+});
+
+// ─────────────────────────────────────────────
+//  CAMERA
+// ─────────────────────────────────────────────
+const $vid    = document.getElementById('cam-video');
+const $photo  = document.getElementById('cam-photo');
+const $canvas = document.getElementById('cam-canvas');
+const $camMsg = document.getElementById('cam-msg');
+const $camTxt = document.getElementById('cam-msg-txt');
+const $badge  = document.getElementById('cam-badge');
+const $btnCap = document.getElementById('btn-capture');
+const $btnRet = document.getElementById('btn-retake');
+const $btnOpen= document.getElementById('btn-open-cam');
+
+async function startCam(){
+  if(camStream) return;
+  $photo.style.display='none'; $vid.style.display='block';
+  $camMsg.classList.remove('hidden'); $camTxt.textContent='Memuat kamera…';
+  $btnCap.style.display='none'; $btnRet.style.display='none'; $btnOpen.style.display='none';
+  setBadge('Memuat…','','');
+  try{
+    camStream = await navigator.mediaDevices.getUserMedia({
+      video:{ facingMode:'user', width:{ideal:640}, height:{ideal:480} }
+    });
+    $vid.srcObject = camStream;
+    await $vid.play();
+    $camMsg.classList.add('hidden');
+    $btnCap.style.display='';
+    setBadge('● Live','#d1fae5','#065f46');
+  } catch(err){
+    $camMsg.classList.remove('hidden');
+    $camTxt.textContent = 'Kamera tidak dapat diakses.\nBuka via localhost/HTTPS atau izinkan akses kamera di browser.';
+    $btnOpen.style.display='';
+    setBadge('Tidak tersedia','#fecdd3','#9f1239');
+  }
+}
+function stopCam(){
+  if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
+}
+function setBadge(txt, bg, clr){
+  $badge.textContent=txt; $badge.style.background=bg; $badge.style.color=clr;
+}
+
+$btnOpen.addEventListener('click', startCam);
+
+$btnCap.addEventListener('click',()=>{
+  $canvas.width  = $vid.videoWidth  || 640;
+  $canvas.height = $vid.videoHeight || 480;
+  const ctx = $canvas.getContext('2d');
+  ctx.scale(-1,1);
+  ctx.drawImage($vid, -$canvas.width, 0, $canvas.width, $canvas.height);
+  ctx.setTransform(1,0,0,1,0,0);
+  photoDataUrl = $canvas.toDataURL('image/jpeg', 0.82);
+  $photo.src = photoDataUrl;
+  $photo.style.display='block'; $vid.style.display='none';
+  $camMsg.classList.add('hidden');
+  $btnCap.style.display='none'; $btnRet.style.display='';
+  photoTaken=true;
+  stopCam();
+  setBadge('✓ Foto diambil','#d1fae5','#065f46');
+  toast('📸 Foto berhasil diambil!');
+});
+
+$btnRet.addEventListener('click',()=>{
+  photoTaken=false; photoDataUrl=null;
+  $photo.style.display='none'; $vid.style.display='block';
+  $btnRet.style.display='none';
+  setBadge('Siap','','');
+  startCam();
+});
+
+// ─────────────────────────────────────────────
+//  LOCATION
+// ─────────────────────────────────────────────
+function checkLocation(){
+  const cfg = getCfg();
+  if(!cfg.officeLat || !cfg.officeLng){
+    setLoc('off','Lokasi kantor belum dikonfigurasi','Atur koordinat di tab Pengaturan (admin)','–');
+    locState={status:'not-configured',distance:null}; return;
+  }
+  setLoc('pending','Memeriksa lokasi Anda…','Menunggu GPS…','…');
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const d = haversine(pos.coords.latitude, pos.coords.longitude, cfg.officeLat, cfg.officeLng);
+    const ds = d<1000 ? `${Math.round(d)} m` : `${(d/1000).toFixed(1)} km`;
+    locState = { status: d<=cfg.officeRadius?'within':'outside', distance:d };
+    if(locState.status==='within')
+      setLoc('within', cfg.officeName, `Jarak: ${ds} dari kantor`, '✓ Dalam Radius');
+    else
+      setLoc('outside','Di luar radius kantor',`Jarak: ${ds} (maks. ${cfg.officeRadius}m)`,'✗ Di Luar');
+  }, ()=>{
+    locState={status:'denied',distance:null};
+    setLoc('off','Izin lokasi ditolak','Aktifkan GPS di browser Anda','Nonaktif');
+  }, {enableHighAccuracy:true, timeout:12000});
+}
+
+function setLoc(state, ttl, sub, badge){
+  const card=document.getElementById('loc-card');
+  card.className=`loc-card ls-${state}`;
+  document.getElementById('loc-ttl').textContent=ttl;
+  document.getElementById('loc-sub').textContent=sub;
+  document.getElementById('loc-badge').textContent=badge;
+}
+
+// ─────────────────────────────────────────────
+//  TIPE TOGGLE → update button style
+// ─────────────────────────────────────────────
+document.querySelectorAll('input[name="tipe"]').forEach(r=>r.addEventListener('change',updateSubmitBtn));
+function selectedTipe(){ return document.querySelector('input[name="tipe"]:checked').value; }
+function updateSubmitBtn(){
+  const btn=document.getElementById('btn-submit');
+  const isMasuk = selectedTipe()==='Absen Masuk';
+  btn.className = `btn ${isMasuk?'btn-emerald':'btn-amber'}`;
+  btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px"><polyline points="22 2 11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Kirim ${isMasuk?'Absen Masuk':'Absen Keluar'}`;
+}
+
+// ─────────────────────────────────────────────
+//  HISTORY RENDER
+// ─────────────────────────────────────────────
+function renderHistory(){
+  const msk = records.filter(r=>r.tipe==='Absen Masuk').length;
+  const klr = records.filter(r=>r.tipe==='Absen Keluar').length;
+  document.getElementById('st-total').textContent = records.length;
+  document.getElementById('st-masuk').textContent = msk;
+  document.getElementById('st-keluar').textContent = klr;
+  document.getElementById('hist-ct').textContent = records.length;
+
+  const list = document.getElementById('hist-list');
+  if(!records.length){
+    list.innerHTML=`<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>Belum ada catatan absensi hari ini.</div>`;
+    return;
+  }
+  list.innerHTML = records.map(r=>{
+    const isMasuk = r.tipe==='Absen Masuk';
+    const thumb = r.photo
+      ? `<div class="hist-thumb"><img src="${r.photo}" alt="foto"/></div>`
+      : `<div class="hist-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg></div>`;
+    return `<div class="hist-item">
+      ${thumb}
+      <div class="hist-info">
+        <div class="hist-name">${esc(r.nama)}</div>
+        <div class="hist-meta">${r.timestamp}</div>
+      </div>
+      <div class="hist-r">
+        <span class="badge ${isMasuk?'b-msk':'b-klr'}">${isMasuk?'Masuk':'Keluar'}</span>
+        ${r.jarakStr?`<span class="badge b-loc">📍 ${esc(r.jarakStr)}</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────────
+//  ABSEN FORM SUBMIT
+// ─────────────────────────────────────────────
+document.getElementById('absen-form').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const nama = document.getElementById('f-nama').value.trim();
+  const tipe = selectedTipe();
+  const ts   = new Date();
+  const cfg  = getCfg();
+
+  if(!nama){ document.getElementById('f-nama').focus(); toast('Nama karyawan wajib diisi!','error'); return; }
+  if(cfg.requirePhoto && !photoTaken){ toast('Wajib ambil foto selfie dahulu!','warn'); return; }
+  if(cfg.requireLocation){
+    if(locState.status==='not-configured'){ toast('Lokasi kantor belum dikonfigurasi admin.','warn'); return; }
+    if(locState.status==='pending')        { toast('Tunggu hingga GPS terdeteksi.','warn'); return; }
+    if(locState.status==='denied')         { toast('Izin GPS ditolak di browser.','error'); return; }
+    if(locState.status==='outside')        { toast(`Anda di luar radius kantor (${Math.round(locState.distance)} m).`,'error'); return; }
+  }
+
+  // Build strings
+  const lokasiStatus = locState.status==='within'  ? 'Dalam Radius'    :
+                       locState.status==='outside' ? 'Di Luar Radius'  :
+                       locState.status==='denied'  ? 'GPS Ditolak'     : '-';
+  const jarakStr = locState.distance!=null ? `${Math.round(locState.distance)} m` : '-';
+
+  const btn=document.getElementById('btn-submit');
+  btn.disabled=true;
+  btn.innerHTML='<div class="spin"></div> Mengirim ke Sheets…';
+
+  const payload = {
+    username:     me?.username||'-',
+    nama, tipe,
+    timestamp:    fFull(ts),
+    tanggal:      fTgl(ts),
+    jam:          fTime(ts),
+    foto:         photoTaken?'Ya':'Tidak',
+    lokasiStatus, jarak: jarakStr,
+  };
+
+  try{
+    await fetch(SCRIPT_URL,{
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify(payload),
+    });
+    // Optimistic update
+    records.unshift({ nama, tipe, timestamp:payload.timestamp, photo:photoTaken?photoDataUrl:null, jarakStr:locState.distance!=null?jarakStr:null });
+    renderHistory();
+    toast(`✅ "${tipe}" terkirim ke Google Sheets!`);
+    // Reset
+    document.getElementById('f-nama').value = me?.nama||'';
+    photoTaken=false; photoDataUrl=null;
+    $photo.style.display='none'; $vid.style.display='block';
+    $btnRet.style.display='none'; setBadge('Siap','','');
+    startCam();
+  } catch(err){
+    toast('Gagal mengirim. Periksa koneksi internet.','error');
+    console.error(err);
+  } finally{
+    btn.disabled=false; updateSubmitBtn();
+  }
+});
+
+// ─────────────────────────────────────────────
+//  ADMIN PANEL
+// ─────────────────────────────────────────────
+function renderAdmin(){
+  const users = getUsers();
+  const cfg   = getCfg();
+  document.getElementById('s-locname').value  = cfg.officeName||'';
+  document.getElementById('s-radius').value   = cfg.officeRadius||100;
+  document.getElementById('s-lat').value      = cfg.officeLat||'';
+  document.getElementById('s-lng').value      = cfg.officeLng||'';
+  document.getElementById('s-req-loc').checked   = !!cfg.requireLocation;
+  document.getElementById('s-req-photo').checked = !!cfg.requirePhoto;
+
+  document.getElementById('utbl-wrap').innerHTML=`
+    <table class="utbl">
+      <thead><tr><th>Nama Lengkap</th><th>Username</th><th>Role</th><th>Aksi</th></tr></thead>
+      <tbody>
+        ${users.map(u=>`<tr>
+          <td style="font-weight:600">${esc(u.nama)}</td>
+          <td style="color:var(--s500);font-size:.78rem">${esc(u.username)}</td>
+          <td><span class="${u.role==='admin'?'role-adm':'role-kar'}">${u.role==='admin'?'Admin':'Karyawan'}</span></td>
+          <td>${me?.username!==u.username
+            ?`<button class="btn btn-danger" onclick="delUser(${u.id})">Hapus</button>`
+            :`<span style="font-size:.73rem;color:var(--s400)">Anda</span>`}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+// Delete user — must be global for onclick
+window.delUser = function(id){
+  if(!confirm('Yakin hapus pengguna ini?')) return;
+  saveUsers(getUsers().filter(u=>u.id!==id));
+  renderAdmin(); toast('Pengguna dihapus.','warn');
+};
+
+// Add user form
+document.getElementById('btn-show-add').addEventListener('click',()=>{
+  document.getElementById('add-form').classList.toggle('show');
+});
+document.getElementById('btn-cancel-add').addEventListener('click',()=>{
+  document.getElementById('add-form').classList.remove('show');
+});
+document.getElementById('btn-save-user').addEventListener('click',()=>{
+  const nama = document.getElementById('nu-nama').value.trim();
+  const user = document.getElementById('nu-user').value.trim().toLowerCase();
+  const pass = document.getElementById('nu-pass').value;
+  const role = document.getElementById('nu-role').value;
+  if(!nama||!user||!pass){ toast('Semua field wajib diisi.','error'); return; }
+  const users = getUsers();
+  if(users.find(u=>u.username===user)){ toast('Username sudah digunakan.','error'); return; }
+  users.push({ id:Date.now(), username:user, password:pass, nama, role });
+  saveUsers(users);
+  document.getElementById('add-form').classList.remove('show');
+  ['nu-nama','nu-user','nu-pass'].forEach(id=>document.getElementById(id).value='');
+  renderAdmin();
+  toast(`Pengguna "${nama}" berhasil ditambahkan! 🎉`);
+});
+
+// Save location
+document.getElementById('btn-save-loc').addEventListener('click',()=>{
+  const lat  = parseFloat(document.getElementById('s-lat').value);
+  const lng  = parseFloat(document.getElementById('s-lng').value);
+  const rad  = parseInt(document.getElementById('s-radius').value);
+  const name = document.getElementById('s-locname').value.trim();
+  if(isNaN(lat)||isNaN(lng)){ toast('Latitude & longitude harus diisi dengan angka.','error'); return; }
+  if(isNaN(rad)||rad<10)    { toast('Radius minimal 10 meter.','error'); return; }
+  saveCfg({ ...getCfg(), officeName:name||'Kantor', officeLat:lat, officeLng:lng, officeRadius:rad });
+  toast('✅ Pengaturan lokasi tersimpan!');
+  checkLocation();
+});
+
+// Use my location
+document.getElementById('btn-use-loc').addEventListener('click',()=>{
+  const btn=document.getElementById('btn-use-loc');
+  btn.disabled=true; btn.textContent='Mendeteksi…';
+  navigator.geolocation.getCurrentPosition(pos=>{
+    document.getElementById('s-lat').value = pos.coords.latitude.toFixed(7);
+    document.getElementById('s-lng').value = pos.coords.longitude.toFixed(7);
+    btn.disabled=false;
+    btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.33 8 12 8 12s8-6.67 8-12a8 8 0 0 0-8-8z"/></svg> Gunakan Lokasi Saya`;
+    toast('📍 Koordinat terdeteksi! Klik Simpan Lokasi.');
+  }, ()=>{
+    btn.disabled=false;
+    btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.33 8 12 8 12s8-6.67 8-12a8 8 0 0 0-8-8z"/></svg> Gunakan Lokasi Saya`;
+    toast('Gagal mendeteksi lokasi.','error');
+  });
+});
+
+// Setting toggles
+document.getElementById('s-req-loc').addEventListener('change',function(){
+  saveCfg({...getCfg(), requireLocation:this.checked});
+  toast(this.checked?'Lokasi wajib diaktifkan.':'Lokasi wajib dinonaktifkan.', this.checked?'success':'warn');
+});
+document.getElementById('s-req-photo').addEventListener('change',function(){
+  saveCfg({...getCfg(), requirePhoto:this.checked});
+  toast(this.checked?'Foto wajib diaktifkan.':'Foto wajib dinonaktifkan.', this.checked?'success':'warn');
+});
+</script>
+</body>
+</html>
