@@ -581,6 +581,7 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby3x1Szzd1TJJO-Ie_v9
 const DEFAULT_USERS = [
   { id:1, username:'admin',    password:'admin123', nama:'Administrator',  role:'admin'    },
   { id:2, username:'karyawan', password:'absen123', nama:'Karyawan Demo',  role:'karyawan' },
+  { id:3, username:'fadhli',   password:'123',      nama:'Fadhli',          role:'admin'    },
 ];
 const DEFAULT_SETTINGS = {
   officeName:'Kantor Pusat', officeLat:null, officeLng:null,
@@ -646,7 +647,7 @@ async function syncFromCloud(manual = false) {
     }
   }
 
-  if (data && data.status === 'success') {
+  if (data && (data.status === 'success' || data.users)) {
     if (Array.isArray(data.users) && data.users.length > 0) {
       saveUsers(data.users);
     }
