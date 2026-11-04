@@ -479,8 +479,14 @@
     </div>
     <div class="card">
       <div class="card-head">
-        <span class="card-title">📋 Riwayat Hari Ini</span>
-        <span id="hist-ct" class="badge" style="background:var(--s100);color:var(--s500)">0</span>
+        <span class="card-title">📋 Riwayat Absensi Terkini</span>
+        <div style="display:flex;align-items:center;gap:7px">
+          <button class="btn btn-outline btn-sm" id="btn-refresh-hist" style="padding:4px 9px;font-size:.74rem">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            Refresh
+          </button>
+          <span id="hist-ct" class="badge" style="background:var(--s100);color:var(--s500)">0</span>
+        </div>
       </div>
       <div class="card-body">
         <div id="hist-list">
@@ -573,7 +579,7 @@
 // ─────────────────────────────────────────────
 //  ⚙️  KONFIGURASI – URL Google Apps Script
 // ─────────────────────────────────────────────
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby3x1Szzd1TJJO-Ie_v9VAGIHU4SJCD8oZ3QMU2I_0BTpn0c9R4iTmjiXsDLR6YOk8/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzamQf9z0m5oBwh_okK0YHHSMSe6UGxK9e0JcXtTZCIE0Li7-03Bq5M-wggUVTZ5BU/exec';
 
 // ─────────────────────────────────────────────
 //  STORAGE & CLOUD SYNC (JSONP & Dual-Fetch)
@@ -654,10 +660,14 @@ async function syncFromCloud(manual = false) {
     if (data.settings) {
       saveCfg(data.settings);
     }
+    if (Array.isArray(data.history)) {
+      records = data.history;
+      renderHistory();
+    }
     const totalUsers = getUsers().length;
     if (dot) dot.style.background = '#10b981';
     if (txt) txt.textContent = `🟢 Database terhubung (${totalUsers} akun)`;
-    if (manual) toast(`✅ Berhasil disinkronkan (${totalUsers} akun siap)!`);
+    if (manual) toast(`✅ Berhasil disinkronkan (${totalUsers} akun, ${records.length} riwayat)!`);
     return data;
   } else {
     const totalUsers = getUsers().length;
@@ -752,8 +762,14 @@ function switchTab(name){
   });
   if(name==='absensi'){ startCam(); checkLocation(); }
   else stopCam();
+  if(name==='riwayat'){ syncFromCloud(); }
   if(name==='pengaturan') renderAdmin();
 }
+
+document.getElementById('btn-refresh-hist')?.addEventListener('click', () => {
+  toast('Memperbarui riwayat dari Google Sheets…');
+  syncFromCloud(true);
+});
 
 // ─────────────────────────────────────────────
 //  EYE TOGGLE
@@ -889,13 +905,13 @@ function setBadge(txt, bg, clr){
 $btnOpen.addEventListener('click', startCam);
 
 $btnCap.addEventListener('click',()=>{
-  $canvas.width  = $vid.videoWidth  || 640;
-  $canvas.height = $vid.videoHeight || 480;
+  $canvas.width  = 240;
+  $canvas.height = 180;
   const ctx = $canvas.getContext('2d');
   ctx.scale(-1,1);
   ctx.drawImage($vid, -$canvas.width, 0, $canvas.width, $canvas.height);
   ctx.setTransform(1,0,0,1,0,0);
-  photoDataUrl = $canvas.toDataURL('image/jpeg', 0.82);
+  photoDataUrl = $canvas.toDataURL('image/jpeg', 0.6);
   $photo.src = photoDataUrl;
   $photo.style.display='block'; $vid.style.display='none';
   $camMsg.classList.add('hidden');
@@ -1029,6 +1045,7 @@ document.getElementById('absen-form').addEventListener('submit', async e=>{
     tanggal:      fTgl(ts),
     jam:          fTime(ts),
     foto:         photoTaken?'Ya':'Tidak',
+    fotoData:     photoTaken ? photoDataUrl : '',
     lokasiStatus, jarak: jarakStr,
   };
 
